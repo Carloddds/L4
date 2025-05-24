@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>My Love Animado</title>
+  <style>
+    body {
+      margin: 0;
+      background: #181124;
+      overflow: hidden;
+      font-family: 'Arial Black', Arial, sans-serif;
+    }
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(30,30,30,0.8);
+      padding: 10px 15px;
+      border-radius: 6px;
+      z-index: 10;
+      color: white;
+      font-size: 14px;
+      user-select: none;
+    }
+    #controls label {
+      display: block;
+      margin-top: 6px;
+      margin-bottom: 2px;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <label for="color">Color:</label>
+    <input type="color" id="color" value="#ff3e7a">
+    <label for="bgColor">Fondo:</label>
+    <input type="color" id="bgColor" value="#181124">
+    <label for="text">Texto:</label>
+    <input type="text" id="text" value="Te amo Lari" maxlength="12" style="width:85px;">
+  </div>
+  <canvas id="matrix"></canvas>
+  <script>
+    const canvas = document.getElementById('matrix');
+    const ctx = canvas.getContext('2d');
+
+    // Ajustar tamaño de canvas
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Opciones personalizables
+    let myColor = document.getElementById('color').value;
+    let bgColor = document.getElementById('bgColor').value;
+    let message = document.getElementById('text').value;
+
+    // Configuración de columnas
+    const fontSize = 22;
+    let columns = Math.floor(window.innerWidth / (fontSize * 1.2));
+    let drops = Array(columns).fill(1);
+
+    function updateColumns() {
+      columns = Math.floor(window.innerWidth / (fontSize * 1.2));
+      drops = Array(columns).fill(1);
+    }
+    window.addEventListener('resize', updateColumns);
+
+    // Animación Matrix
+    function draw() {
+      // Fondo
+      ctx.fillStyle = hexToRgba(bgColor, 0.10);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.font = `bold ${fontSize}px Arial Black, Arial, sans-serif`;
+      for (let i = 0; i < columns; i++) {
+        // Sombra para efecto glow
+        ctx.shadowColor = myColor;
+        ctx.shadowBlur = 50;
+        ctx.fillStyle = myColor;
+
+        // Dibujar texto
+        const x = i * fontSize * 1.2;
+        const y = drops[i] * fontSize;
+        ctx.fillText(message, x, y);
+
+        // Aleatorio para reiniciar drops
+        if (y > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+
+        drops[i] += 0.3; // Cambia 1 por 0.3 para hacerlo más lento
+      }
+
+      ctx.shadowBlur = 0; // reset glow
+      requestAnimationFrame(draw);
+    }
+
+    // Conversión de HEX a RGBA para fondo translúcido
+    function hexToRgba(hex, alpha) {
+      const [r, g, b] = hex.replace('#','').match(/.{1,2}/g).map(x => parseInt(x,16));
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+
+    // Controles de usuario
+    document.getElementById('color').addEventListener('input', e => myColor = e.target.value);
+    document.getElementById('bgColor').addEventListener('input', e => bgColor = e.target.value);
+    document.getElementById('text').addEventListener('input', e => message = e.target.value || 'My Love');
+
+    draw();
+  </script>
+</body>
+</html>
